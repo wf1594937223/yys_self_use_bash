@@ -10,6 +10,6 @@ $(TARGET): fei.cpp
 	$(CXX) $(CXXFLAGS) fei.cpp -o $(TARGET) $(EXTRA)
 
 clean:
-	rm -f $(TARGET)
+	-del $(TARGET)
 
 .PHONY: all clean

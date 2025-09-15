@@ -92,7 +92,7 @@ int main()
 			printf("请将鼠标移动到第%d个位置，然后按任意键继续。\n", i);
 			system("pause");
 			GetCursorPos(&a[i]);
-			printf("第%d个位置坐标为:(%d, %d)\n", i, a[i].x, a[i].y);
+			printf("第%d个位置坐标为:(%ld, %ld)\n", i, a[i].x, a[i].y);
 		}
 		//get the number of intevals and the intevals
 		printf("请输入每轮的间隔个数（输入0则沿用上次数据，否则和鼠标位置个数相同）：");
