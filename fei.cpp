@@ -29,6 +29,18 @@ POINT pos(int x, int y)
 	tmp.y = y + ran_tiy;
 	return tmp;
 }
+bool checkRedPixel(int x, int y) {
+    HDC hdc = GetDC(NULL);  // 获取整个屏幕的 DC
+    COLORREF color = GetPixel(hdc, x, y);
+    ReleaseDC(NULL, hdc);
+
+    int r = GetRValue(color);
+    int g = GetGValue(color);
+    int b = GetBValue(color);
+
+    // 简单判断是否为红色像素（阈值可调）
+    return (r > 200 && g < 80 && b < 80);
+}
 // void clk(int x, int y)
 // {
 // 	POINT tmp = pos(x, y);
@@ -62,11 +74,11 @@ void clk(int x, int y) {
     mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 }
 
-POINT a[1010];
+POINT a[1010], help_mission;
 int b[1010];
 int main()
 {
-	int i, j, n, m, k;
+	int i, j, n, m, tag, k;
 	// 文件名
 	const char* savefile = "mouse_data.txt";
 	//get the number of positions and the positions
@@ -127,6 +139,37 @@ int main()
 		fout.close();
 		printf("已保存本次数据，下次可直接输入0沿用\n");
 	}
+	printf("请问是否需要检测广告（协作任务）弹出（负数否，正数是，0沿用上次数据）：\n");
+	scanf("%d", &tag);
+	if (tag > 0)
+	{
+		printf("请将鼠标移动到协作任务位置，然后按任意键继续。\n");
+		system("pause");
+		GetCursorPos(&help_mission);
+		printf("协作任务位置坐标为:(%ld, %ld)\n", help_mission.x, help_mission.y);
+	}
+	else if (tag == 0) {
+		std::ifstream fin(savefile);
+		if (!fin) {
+			printf("未找到上次保存的数据，无法沿用！\n");
+			return 1;
+		}
+		int tmpn, tmpm;
+		fin >> tmpn;
+		for (i = 1; i <= tmpn; i++) { int tx, ty; fin >> tx >> ty; }
+		fin >> tmpm;
+		for (i = 1; i <= tmpm; i++) { int tb; fin >> tb; }
+		fin >> tag;
+		if (tag > 0) fin >> help_mission.x >> help_mission.y;
+		fin.close();
+		if (tag > 0)
+			printf("已从文件沿用上次的协作任务位置:(%ld, %ld)\n", help_mission.x, help_mission.y);
+		else
+			printf("已从文件沿用上次的不检测广告\n");
+	}
+	else {
+		printf("本次不检测广告（协作任务）\n");
+	}
 	//get the number of cycle
 	printf("请输入你要循环的轮数（输入-1为无限循环），然后回车：");
 	scanf("%d", &k);
@@ -136,7 +179,9 @@ int main()
 	{
 		k--;
 		for (j = 1; j <= n; j++)
-		{	
+		{
+			if(!tag && checkRedPixel(help_mission.x, help_mission.y))
+				clk(help_mission.x, help_mission.y);
 			clk(a[j].x, a[j].y);
 			slp(b[j]);
 		}
