@@ -29,18 +29,6 @@ POINT pos(int x, int y)
 	tmp.y = y + ran_tiy;
 	return tmp;
 }
-bool checkRedPixel(int x, int y) {
-    HDC hdc = GetDC(NULL);  // 获取整个屏幕的 DC
-    COLORREF color = GetPixel(hdc, x, y);
-    ReleaseDC(NULL, hdc);
-
-    int r = GetRValue(color);
-    int g = GetGValue(color);
-    int b = GetBValue(color);
-
-    // 简单判断是否为红色像素（阈值可调）
-    return (r > 200 && g < 80 && b < 80);
-}
 // void clk(int x, int y)
 // {
 // 	POINT tmp = pos(x, y);
@@ -74,17 +62,53 @@ void clk(int x, int y) {
     mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 }
 
+COLORREF GetColorAt(int x, int y) {
+    HDC hdcScreen = GetDC(NULL);
+    HDC hdcMem = CreateCompatibleDC(hdcScreen);
+    HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, 1, 1);
+    SelectObject(hdcMem, hBitmap);
+
+    // 复制屏幕内容
+    BitBlt(hdcMem, 0, 0, 1, 1, hdcScreen, x, y, SRCCOPY | CAPTUREBLT);
+
+    COLORREF color = GetPixel(hdcMem, 0, 0);
+
+    DeleteObject(hBitmap);
+    DeleteDC(hdcMem);
+    ReleaseDC(NULL, hdcScreen);
+
+    return color;
+}
+
+bool checkRedPixel(int x, int y) {
+	ShowCursor(FALSE); // 隐藏光标，避免遮挡
+    // HDC hdc = GetDC(NULL);  // 获取整个屏幕的 DC
+    // COLORREF color = GetPixel(hdc, x, y);
+    COLORREF color = GetColorAt(x, y);
+	// ReleaseDC(NULL, hdc);
+	ShowCursor(TRUE);  // 恢复光标显示
+
+    int r = GetRValue(color);
+    int g = GetGValue(color);
+    int b = GetBValue(color);
+
+    // 简单判断是否为红色像素（阈值可调）
+	printf("广告像素检测结果为 R=%d, G=%d, B=%d\n", r, g, b);
+    return (r > 200 && g + b <= r);
+}
+
 POINT a[1010], help_mission;
 int b[1010];
 int main()
 {
-	int i, j, n, m, tag, k;
+	SetProcessDPIAware(); // 使程序支持高DPI显示
+	int i, j, n, m, l, tagn, tagm, tagl, k;
 	// 文件名
 	const char* savefile = "mouse_data.txt";
 	//get the number of positions and the positions
 	printf("欢迎使用本软件！每次操作后请按回车\n");
 	printf("请输入你要点击的鼠标位置个数（输入0则沿用上次数据）：");
-	scanf("%d", &n);
+	scanf("%d", &tagn); n = tagn;
 	if (n == 0) {
 		std::ifstream fin(savefile);
 		if (!fin) {
@@ -108,7 +132,7 @@ int main()
 		}
 		//get the number of intevals and the intevals
 		printf("请输入每轮的间隔个数（输入0则沿用上次数据，否则和鼠标位置个数相同）：");
-		scanf("%d", &m);
+		scanf("%d", &tagm); m = tagm;
 		if (m == 0) {
 			std::ifstream fin(savefile);
 			if (!fin) {
@@ -140,29 +164,32 @@ int main()
 		printf("已保存本次数据，下次可直接输入0沿用\n");
 	}
 	printf("请问是否需要检测广告（协作任务）弹出（负数否，正数是，0沿用上次数据）：\n");
-	scanf("%d", &tag);
-	if (tag > 0)
+	scanf("%d", &tagl); l = tagl;
+	if (tagl > 0)
 	{
-		printf("请将鼠标移动到协作任务位置，然后按任意键继续。\n");
+		printf("请将鼠标移动到协作任务拒绝位置，然后按任意键继续。\n");
 		system("pause");
 		GetCursorPos(&help_mission);
-		printf("协作任务位置坐标为:(%ld, %ld)\n", help_mission.x, help_mission.y);
+		printf("协作任务拒绝位置坐标为:(%ld, %ld)\n", help_mission.x, help_mission.y);
 	}
-	else if (tag == 0) {
+	else if (tagl == 0) {
 		std::ifstream fin(savefile);
 		if (!fin) {
 			printf("未找到上次保存的数据，无法沿用！\n");
 			return 1;
 		}
-		int tmpn, tmpm;
-		fin >> tmpn;
-		for (i = 1; i <= tmpn; i++) { int tx, ty; fin >> tx >> ty; }
-		fin >> tmpm;
-		for (i = 1; i <= tmpm; i++) { int tb; fin >> tb; }
-		fin >> tag;
-		if (tag > 0) fin >> help_mission.x >> help_mission.y;
+		if (tagn > 0 || tagm > 0) {
+			// 跳过前面保存的坐标和间隔
+			int tmpn, tmpm;
+			fin >> tmpn;
+			for (i = 1; i <= tmpn; i++) { int tx, ty; fin >> tx >> ty; }
+			fin >> tmpm;
+			for (i = 1; i <= tmpm; i++) { int tb; fin >> tb; }
+		}
+		fin >> l;
+		if (l > 0) fin >> help_mission.x >> help_mission.y;
 		fin.close();
-		if (tag > 0)
+		if (l > 0)
 			printf("已从文件沿用上次的协作任务位置:(%ld, %ld)\n", help_mission.x, help_mission.y);
 		else
 			printf("已从文件沿用上次的不检测广告\n");
@@ -180,7 +207,7 @@ int main()
 		k--;
 		for (j = 1; j <= n; j++)
 		{
-			if(!tag && checkRedPixel(help_mission.x, help_mission.y))
+			if(l > 0 && checkRedPixel(help_mission.x, help_mission.y))
 				clk(help_mission.x, help_mission.y);
 			clk(a[j].x, a[j].y);
 			slp(b[j]);

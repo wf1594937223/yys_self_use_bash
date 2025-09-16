@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -Wall -std=c++17
-EXTRA = -fexec-charset=GBK -finput-charset=UTF-8
+EXTRA = -fexec-charset=GBK -finput-charset=UTF-8 -lgdi32
 
 TARGET = fei.exe
 
