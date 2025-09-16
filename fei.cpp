@@ -42,7 +42,8 @@ void smoothMove(int x, int y) {
     POINT p, tmpp;
     GetCursorPos(&p);
 	tmpp = pos(x, y);
-    int startX = tmpp.x, startY = tmpp.y;
+	x = tmpp.x; y = tmpp.y;
+    int startX = p.x, startY = p.y;
     int steps = 30 + rand() % 20; // 随机步数，模拟人手
     for (int i = 1; i <= steps; ++i) {
         double t = (double)i / steps;
