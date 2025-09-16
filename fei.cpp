@@ -39,9 +39,10 @@ POINT pos(int x, int y)
 // }
 // 平滑移动鼠标到(x, y)
 void smoothMove(int x, int y) {
-    POINT p;
+    POINT p, tmpp;
     GetCursorPos(&p);
-    int startX = p.x, startY = p.y;
+	tmpp = pos(x, y);
+    int startX = tmpp.x, startY = tmpp.y;
     int steps = 30 + rand() % 20; // 随机步数，模拟人手
     for (int i = 1; i <= steps; ++i) {
         double t = (double)i / steps;
