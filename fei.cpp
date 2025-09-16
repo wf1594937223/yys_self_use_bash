@@ -154,14 +154,6 @@ int main()
 				scanf("%d", &b[i]); b[i] *= 1000;
 			}
 		}
-		// 保存数据到文件
-		std::ofstream fout(savefile);
-		fout << n << " ";
-		for (i = 1; i <= n; i++) fout << a[i].x << " " << a[i].y << " ";
-		fout << m << " ";
-		for (i = 1; i <= m; i++) fout << b[i] << " ";
-		fout.close();
-		printf("已保存本次数据，下次可直接输入0沿用\n");
 	}
 	printf("请问是否需要检测广告（协作任务）弹出（负数否，正数是，0沿用上次数据）：\n");
 	scanf("%d", &tagl); l = tagl;
@@ -178,14 +170,11 @@ int main()
 			printf("未找到上次保存的数据，无法沿用！\n");
 			return 1;
 		}
-		if (tagn > 0 || tagm > 0) {
-			// 跳过前面保存的坐标和间隔
-			int tmpn, tmpm;
-			fin >> tmpn;
-			for (i = 1; i <= tmpn; i++) { int tx, ty; fin >> tx >> ty; }
-			fin >> tmpm;
-			for (i = 1; i <= tmpm; i++) { int tb; fin >> tb; }
-		}
+		int tmpn, tmpm;
+		fin >> tmpn;
+		for (i = 1; i <= tmpn; i++) { int tx, ty; fin >> tx >> ty; }
+		fin >> tmpm;
+		for (i = 1; i <= tmpm; i++) { int tb; fin >> tb; }
 		fin >> l;
 		if (l > 0) fin >> help_mission.x >> help_mission.y;
 		fin.close();
@@ -197,6 +186,16 @@ int main()
 	else {
 		printf("本次不检测广告（协作任务）\n");
 	}
+	// 保存数据到文件
+	std::ofstream fout(savefile);
+	fout << n << " ";
+	for (i = 1; i <= n; i++) fout << a[i].x << " " << a[i].y << " ";
+	fout << m << " ";
+	for (i = 1; i <= m; i++) fout << b[i] << " ";
+	fout << l << " ";
+	if (l > 0) fout << help_mission.x << " " << help_mission.y << " ";
+	fout.close();
+	printf("已保存本次数据，下次可直接输入0沿用\n");
 	//get the number of cycle
 	printf("请输入你要循环的轮数（输入-1为无限循环），然后回车：");
 	scanf("%d", &k);
