@@ -13,10 +13,40 @@ bool isPaused = false;
 bool shouldStop = false;
 void slp(int ti)
 {
-	int sig, ran_ti;
+	int sig, ran_ti, i;
 	sig = (ran() % 2) * 2 - 1;
 	ran_ti = (ran() % (ti / 100)) * sig;
-	Sleep(ti + ran_ti);
+	//Sleep(ti + ran_ti);
+	for (i = 1; i <= (ti + ran_ti); i += 20)
+	{
+		if (GetAsyncKeyState('Q') & 0x8000) {
+	   	    printf("\n检测到 Q，程序即将停止！\n");
+		   	shouldStop = true;
+			break;
+	    }
+	   	if (GetAsyncKeyState('P') & 0x8000) {
+		   	isPaused = !isPaused;
+	        if (isPaused) printf("\n已暂停，按 P 继续...\n");
+			else printf("\n已继续运行\n");
+	   	    Sleep(100); // 防止按键触发多次
+	   	}
+	    while (isPaused) {
+			if (GetAsyncKeyState('Q') & 0x8000) {
+	   	        printf("\n检测到 Q，程序即将停止！\n");
+		   	    shouldStop = true;
+			   	break;
+	        }
+			if (GetAsyncKeyState('P') & 0x8000) {
+	   	        isPaused = false;
+		   	    printf("\n已继续运行\n");
+			   	Sleep(100);
+	        }
+			Sleep(50);
+	   	}
+	   	if (shouldStop) return;
+	   	Sleep(20);
+	}
+	Sleep(ti + ran_ti - i + 20);
 	return;
 }
 //random pos for not hacking
@@ -49,6 +79,31 @@ void smoothMove(int x, int y) {
     int startX = p.x, startY = p.y;
     int steps = 30 + rand() % 20; // 随机步数，模拟人手
     for (int i = 1; i <= steps; ++i) {
+		if (GetAsyncKeyState('Q') & 0x8000) {
+       	    printf("\n检测到 Q，程序即将停止！\n");
+           	shouldStop = true;
+            break;
+	    }
+       	if (GetAsyncKeyState('P') & 0x8000) {
+           	isPaused = !isPaused;
+	        if (isPaused) printf("\n已暂停，按 P 继续...\n");
+            else printf("\n已继续运行\n");
+       	    Sleep(100); // 防止按键触发多次
+       	}
+	    while (isPaused) {
+            if (GetAsyncKeyState('Q') & 0x8000) {
+       	        printf("\n检测到 Q，程序即将停止！\n");
+           	    shouldStop = true;
+               	break;
+	        }
+            if (GetAsyncKeyState('P') & 0x8000) {
+       	        isPaused = false;
+           	    printf("\n已继续运行\n");
+               	Sleep(100);
+	        }
+            Sleep(50);
+       	}
+       	if (shouldStop) return;
         double t = (double)i / steps;
         // 可用贝塞尔曲线或简单线性插值
         int curX = startX + (int)((x - startX) * t);

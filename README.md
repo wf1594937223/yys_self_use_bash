@@ -26,3 +26,9 @@ I don't want to use English from now on, let's use Chinese
 
 - 新增了检测协作任务并自动关闭功能
 - 更新了数据记录模块
+
+1.2版本概述：
+
+- 新增了暂停和停止功能
+- 单击P键暂停/继续，单击Q键退出
+- 修复了部分情况按键无反应的问题
