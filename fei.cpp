@@ -1,5 +1,6 @@
 // ...existing code...
 #include <windows.h>
+#include <conio.h>
 #include <fstream>
 #include <stdio.h>
 #include <time.h>
@@ -8,6 +9,8 @@
 # include <fstream>
 std::mt19937 ran(time(0));
 //random time for not hacking
+bool isPaused = false;
+bool shouldStop = false;
 void slp(int ti)
 {
 	int sig, ran_ti;
@@ -203,16 +206,44 @@ int main()
 	scanf("%d", &k);
 	printf("即将在5秒后开始，请做好准备！\n");
 	Sleep(5000);
-	while(k)
+	while(k && !shouldStop)
 	{
-		k--;
-		for (j = 1; j <= n; j++)
-		{
-			if(l > 0 && checkRedPixel(help_mission.x, help_mission.y))
-				clk(help_mission.x, help_mission.y);
-			clk(a[j].x, a[j].y);
-			slp(b[j]);
-		}
+    	k--;
+    	for (j = 1; j <= n; j++)
+    	{
+	        // ----实时检测键盘----
+    	    if (GetAsyncKeyState('Q') & 0x8000) {
+        	    printf("\n检测到 Q，程序即将停止！\n");
+            	shouldStop = true;
+    	        break;
+	        }
+        	if (GetAsyncKeyState('P') & 0x8000) {
+            	isPaused = !isPaused;
+	            if (isPaused) printf("\n已暂停，按 P 继续...\n");
+    	        else printf("\n已继续运行\n");
+        	    Sleep(100); // 防止按键触发多次
+        	}
+	        while (isPaused) {
+    	        if (GetAsyncKeyState('Q') & 0x8000) {
+        	        printf("\n检测到 Q，程序即将停止！\n");
+            	    shouldStop = true;
+                	break;
+	            }
+    	        if (GetAsyncKeyState('P') & 0x8000) {
+        	        isPaused = false;
+            	    printf("\n已继续运行\n");
+                	Sleep(100);
+	            }
+    	        Sleep(50);
+        	}
+        	if (shouldStop) break;
+	        // -----------------------
+	        if (l > 0 && checkRedPixel(help_mission.x, help_mission.y))
+    	        clk(help_mission.x, help_mission.y);
+        	clk(a[j].x, a[j].y);
+        	slp(b[j]);
+    	}
 	}
+
 	return 0;
 }
